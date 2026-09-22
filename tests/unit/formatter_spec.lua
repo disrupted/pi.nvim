@@ -827,18 +827,38 @@ describe('formatter', function()
     )
   end)
 
-  it('falls back to current mode for assistant messages without a stamped mode', function()
-    state.model.set_mode('build')
+  it('renders assistant headers without a role label and shortens model names', function()
     local output = formatter.format_message_header({
       info = {
         id = 'msg_current',
         role = 'assistant',
         sessionID = 'ses_1',
+        providerID = 'openai',
+        modelID = 'models/gpt-5',
       },
       parts = {},
     })
 
-    assert.are.equal('BUILD', output.extmarks[1][1].virt_text[3][1])
+    local header = output.extmarks[1][1].virt_text
+    assert.are.same({ 'π ', 'PiMessageRoleAssistant' }, header[1])
+    assert.are.same({ 'gpt-5', 'PiHint' }, header[2])
+  end)
+
+  it('renders user headers with an account icon instead of a role label', function()
+    local output = formatter.format_message_header({
+      info = {
+        id = 'msg_current',
+        role = 'user',
+        sessionID = 'ses_1',
+        providerID = 'openai',
+        modelID = 'gpt-5',
+      },
+      parts = {},
+    })
+
+    local header = output.extmarks[1][1].virt_text
+    assert.are.same({ '▌󰀄 ', 'PiMessageRoleUser' }, header[1])
+    assert.are.same({ 'gpt-5', 'PiHint' }, header[2])
   end)
 
   it('renders minimal same-mode assistant headers with only right-aligned time', function()
@@ -965,7 +985,7 @@ describe('formatter', function()
     assert.are.same({ 'First reply', '', 'Second reply', '' }, combined_lines)
   end)
 
-  it('keeps full assistant headers when the mode changes', function()
+  it('keeps distinct assistant headers when the mode changes', function()
     config.setup({
       ui = {
         output = {
@@ -996,7 +1016,7 @@ describe('formatter', function()
     })
 
     assert.are.same({ '----', '', '' }, output.lines)
-    assert.are.equal('BUILD', output.extmarks[1][1].virt_text[3][1])
+    assert.are.equal('π ', output.extmarks[1][1].virt_text[1][1])
   end)
 
   it('anchors task child-session action to the rendered task block', function()

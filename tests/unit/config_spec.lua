@@ -24,6 +24,12 @@ describe('pi.config', function()
     assert.same(config.defaults, config.values)
   end)
 
+  it('hides message IDs by default', function()
+    config.setup(nil)
+
+    assert.is_false(config.values.debug.show_ids)
+  end)
+
   it('merges user options with defaults', function()
     local custom_callback = function()
       return 'custom'

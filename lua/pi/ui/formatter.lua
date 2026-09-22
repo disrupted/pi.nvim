@@ -254,22 +254,9 @@ function M.format_message_header(message, previous_message)
     or message.info.providerID
     or message.info.modelID
     or ''
+  model_text = model_text:match('([^/]+)$') or model_text
 
   local debug_text = config.debug.show_ids and ' [' .. message.info.id .. ']' or ''
-
-  local display_name
-  if role == 'assistant' then
-    local mode = message.info.mode
-    if mode and mode ~= '' then
-      display_name = mode:upper()
-    elseif state.current_mode and state.current_mode ~= '' then
-      display_name = state.current_mode:upper()
-    else
-      display_name = 'ASSISTANT'
-    end
-  else
-    display_name = role:upper()
-  end
 
   local header_style = config.ui.output.compact_assistant_headers
   if header_style == true then
@@ -302,9 +289,6 @@ function M.format_message_header(message, previous_message)
     output:add_extmark(output:get_line_count() - 1, {
       virt_text = {
         { icon, role_hl },
-        { ' ' },
-        { display_name, role_hl },
-        { ' ' },
         { model_text, 'PiHint' },
         { debug_text, 'PiHint' },
       },
