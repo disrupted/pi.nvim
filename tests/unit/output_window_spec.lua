@@ -45,6 +45,15 @@ describe('ui.create_windows output filetype', function()
     assert.equals('pi_output', filetype)
   end)
 
+  it('starts markdown treesitter highlighting for output', function()
+    local start_stub = stub(vim.treesitter, 'start')
+    config.setup({})
+    windows = ui.create_windows()
+
+    assert.stub(start_stub).was_called_with(windows.output_buf, 'markdown')
+    start_stub:revert()
+  end)
+
   it('uses configured output filetype', function()
     config.setup({
       ui = {
