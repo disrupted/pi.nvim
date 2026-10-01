@@ -388,6 +388,9 @@
 ---@field preset_args? string[]
 ---@field fn? fun(args:string[]|nil):nil|Promise<any>|any
 
+---@class PiModelPickerConfig
+---@field include? string[]
+
 ---@class PiConfig
 ---@field preferred_picker 'telescope' | 'telescope.nvim' | 'fzf' | 'fzf-lua' | 'mini.pick' | 'snacks' | 'snacks.nvim' | 'select' | nil
 ---@field default_global_keymaps boolean
@@ -396,6 +399,7 @@
 ---@field keymap_prefix string
 ---@field pi_executable 'pi' | string -- Command run for calling pi
 ---@field lock_session_to_directory boolean -- If true, active session is preserved across DirChanged events
+---@field model_picker PiModelPickerConfig
 ---@field server PiServerConfig -- Custom/external server configuration
 ---@field keymap PiKeymap
 ---@field ui PiUIConfig

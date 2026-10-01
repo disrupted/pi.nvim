@@ -16,6 +16,9 @@ M.defaults = {
   pi_executable = 'pi',
   pi_args = {},
   lock_session_to_directory = false,
+  model_picker = {
+    include = nil,
+  },
   server = {
     url = nil,
     port = nil,

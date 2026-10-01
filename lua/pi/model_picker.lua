@@ -15,31 +15,41 @@ function M._get_models()
   local last_used_icon = icons.get('last_used')
 
   local state = model_state.load()
+  local included_models = config.model_picker.include
+  local include = nil
+  if included_models and #included_models > 0 then
+    include = {}
+    for _, model in ipairs(included_models) do
+      include[model] = true
+    end
+  end
 
   local models = {}
   for _, provider in ipairs(response.providers) do
     for _, model in pairs(provider.models) do
       local provider_id = provider.id
       local model_id = model.id
-      local fav_idx = model_state.get_model_index(provider_id, model_id, state.favorite)
-      local recent_idx = model_state.get_model_index(provider_id, model_id, state.recent)
+      if not include or include[provider_id .. '/' .. model_id] then
+        local fav_idx = model_state.get_model_index(provider_id, model_id, state.favorite)
+        local recent_idx = model_state.get_model_index(provider_id, model_id, state.recent)
 
-      local icon = nil
-      if fav_idx then
-        icon = preferred_icon
-      elseif recent_idx then
-        icon = last_used_icon
+        local icon = nil
+        if fav_idx then
+          icon = preferred_icon
+        elseif recent_idx then
+          icon = last_used_icon
+        end
+
+        table.insert(models, {
+          provider = provider_id,
+          provider_name = provider.name,
+          model = model_id,
+          model_name = model.name,
+          icon = icon,
+          favorite_index = fav_idx or 999,
+          recent_index = recent_idx or 999,
+        })
       end
-
-      table.insert(models, {
-        provider = provider_id,
-        provider_name = provider.name,
-        model = model_id,
-        model_name = model.name,
-        icon = icon,
-        favorite_index = fav_idx or 999, -- High number for non-favorite items
-        recent_index = recent_idx or 999, -- High number for non-recent items
-      })
     end
   end
 
