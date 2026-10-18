@@ -52,13 +52,13 @@ local function update_message(role, id, message)
   emit('message.updated', { info = message_info(role, id, message) })
 end
 
-local function update_text_part(message_id, part_id, text, synthetic)
+local function update_text_part(message_id, part_id, text, synthetic, part_type)
   emit('message.part.updated', {
     part = {
       id = part_id,
       messageID = message_id,
       sessionID = session_id(),
-      type = 'text',
+      type = part_type or 'text',
       text = text or '',
       synthetic = synthetic or nil,
     },
@@ -183,7 +183,7 @@ local function emit_full_message(message, index)
     for i, item in ipairs(message.content) do
       local part_id = message_id .. '_part_' .. tostring(i)
       if item.type == 'thinking' then
-        update_text_part(message_id, part_id, item.thinking or '', true)
+        update_text_part(message_id, part_id, item.thinking or '', nil, 'reasoning')
       elseif item.type == 'toolCall' then
         update_tool_part(message_id, part_id, item.name, item.arguments or {}, {
           callID = item.id or item.callID,
@@ -237,8 +237,8 @@ function M.messages_from_pi(messages, session_id_override)
           type = 'text',
         }
         if item.type == 'thinking' then
+          part.type = 'reasoning'
           part.text = item.thinking or ''
-          part.synthetic = true
         elseif item.type == 'toolCall' then
           part.type = 'tool'
           part.tool = normalize_tool_name(item.name)
@@ -385,11 +385,11 @@ function M.handle_event(event)
       update_text_part(message_id, live.text_parts[key].id, live.text_parts[key].text, nil)
     elseif delta.type == 'thinking_start' then
       live.thinking_parts[key] = { id = next_id('pi_prt', 'part'), text = '' }
-      update_text_part(message_id, live.thinking_parts[key].id, '', true)
+      update_text_part(message_id, live.thinking_parts[key].id, '', nil, 'reasoning')
     elseif delta.type == 'thinking_delta' then
       live.thinking_parts[key] = live.thinking_parts[key] or { id = next_id('pi_prt', 'part'), text = '' }
       live.thinking_parts[key].text = live.thinking_parts[key].text .. (delta.delta or '')
-      update_text_part(message_id, live.thinking_parts[key].id, live.thinking_parts[key].text, true)
+      update_text_part(message_id, live.thinking_parts[key].id, live.thinking_parts[key].text, nil, 'reasoning')
     elseif delta.type == 'toolcall_end' and delta.toolCall then
       local tool = delta.toolCall
       local call_id = tool.id or tool.callID
@@ -430,7 +430,7 @@ function M.handle_event(event)
         elseif item.type == 'thinking' then
           live.thinking_parts[key] = live.thinking_parts[key] or { id = next_id('pi_prt', 'part'), text = '' }
           live.thinking_parts[key].text = item.thinking or live.thinking_parts[key].text or ''
-          update_text_part(message_id, live.thinking_parts[key].id, live.thinking_parts[key].text, true)
+          update_text_part(message_id, live.thinking_parts[key].id, live.thinking_parts[key].text, nil, 'reasoning')
         elseif item.type == 'toolCall' then
           local call_id = item.id or item.callID
           local cached = ensure_tool_part(call_id, 'content:' .. key, item.name, item.arguments or {})
