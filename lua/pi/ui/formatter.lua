@@ -289,6 +289,9 @@ function M.format_message_header(message, previous_message)
     output:add_extmark(output:get_line_count() - 1, {
       virt_text = {
         { icon, role_hl },
+        { ' ' },
+        { role:upper(), role_hl },
+        { ' ' },
         { model_text, 'PiHint' },
         { debug_text, 'PiHint' },
       },
